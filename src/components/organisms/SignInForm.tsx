@@ -57,10 +57,11 @@ export const SignInForm = () => {
       ...prev,
       [name]: value
     }));
-    if (errors[name as keyof FormErrors]) {
+    if (errors[name as keyof FormErrors] || errors.general) {
       setErrors(prev => ({
         ...prev,
-        [name]: undefined
+        [name]: undefined,
+        general: undefined
       }));
     }
   };
