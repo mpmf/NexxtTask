@@ -1,7 +1,12 @@
 import { Input } from '../atoms/Input';
 import { Button } from '../atoms/Button';
 
-export const DashboardHeader = () => {
+interface DashboardHeaderProps {
+  tagFilter: string;
+  onTagFilterChange: (filter: string) => void;
+}
+
+export const DashboardHeader = ({ tagFilter, onTagFilterChange }: DashboardHeaderProps) => {
   return (
     <header className="glass-card sticky top-0 z-10 mx-8 mt-6 rounded-3xl">
       <div className="px-6 pt-4 pb-3">
@@ -10,6 +15,8 @@ export const DashboardHeader = () => {
           <div className="flex-1 max-w-sm">
             <Input 
               placeholder="Filter by tag..."
+              value={tagFilter}
+              onChange={(e) => onTagFilterChange(e.target.value)}
             />
           </div>
           

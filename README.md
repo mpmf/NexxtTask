@@ -75,23 +75,24 @@ A modern team task management application built with React, TypeScript, Tailwind
 ## 🏗️ Architecture
 
 ### Component Structure (Atomic Design)
-- **Atoms**: Basic building blocks (Button, Input, etc.)
-- **Molecules**: Simple combinations of atoms (Card, FormField, etc.)
-- **Organisms**: Complex UI components (Header, Sidebar, etc.)
+- **Atoms**: Basic building blocks (Button, Input, TagBadge, UserAvatar, etc.)
+- **Molecules**: Simple combinations of atoms (TaskCard, FormField, Pagination, etc.)
+- **Organisms**: Complex UI components (Header, Sidebar, DashboardTaskList, etc.)
 - **Templates**: Page-level layouts
 
 ### Project Structure
 ```
 src/
 ├── components/          # Atomic design components
-│   ├── atoms/          # Basic components (Button, Input, Logo)
-│   ├── molecules/      # Component combinations (FeatureCard, TaskCard)
-│   ├── organisms/      # Complex components (Header, Sidebar, TaskList)
+│   ├── atoms/          # Basic components (Button, Input, Logo, TagBadge, UserAvatar)
+│   ├── molecules/      # Component combinations (FeatureCard, TaskCard, DashboardTaskCard, Pagination)
+│   ├── organisms/      # Complex components (Header, Sidebar, TaskList, DashboardTaskList)
 │   └── templates/      # Page layouts
-├── pages/              # Page components (Home, Dashboard, SignIn, SignUp)
+├── pages/              # Page components (Home, Dashboard, SignIn, SignUp, CreateTask)
 ├── services/           # API services
 │   ├── authService.ts  # Authentication service
 │   ├── taskService.ts  # Task management service (25+ functions)
+│   ├── userService.ts  # User profile lookup service
 │   └── supabase.ts     # Supabase client configuration
 ├── types/              # TypeScript type definitions
 │   ├── auth.ts         # Authentication types
@@ -119,6 +120,15 @@ tests/
 - **Tagging System** - Reusable, color-coded tags for task categorization
 - **Access Control** - Owner-based permissions with granular access for assigned users
 - **Task States** - Active, Completed, or Canceled status management
+
+### Dashboard Features
+- **Task Listing** - View all tasks you own or are assigned to
+- **Active/Archived Sections** - Tasks automatically organized by status
+- **Tag Filtering** - Filter tasks by tag name in real-time
+- **Pagination** - Navigate through tasks with 10 items per page (separate pagination for active and archived)
+- **Progress Visualization** - Color-coded progress bars (teal for active, green for completed, gray for canceled)
+- **User Badges** - Visual representation of assigned users with initials and consistent colors
+- **Task Status Indicators** - Clear badges for DONE and CANCELED tasks
 
 ### Authentication
 - Email/Password authentication via Supabase Auth
@@ -171,6 +181,7 @@ The project follows these architectural principles:
 - **Layered Architecture** with clear separation between UI, services, and data
 - **Service Layer** (`src/services/`) handles all backend communication and business logic
 - **Type Safety** with TypeScript interfaces for all data structures
+- **User Service** - Provides user profile lookup by IDs for displaying assigned users
 
 **Task Service Layer:**
 
@@ -192,9 +203,16 @@ The task management system is implemented through a comprehensive service layer 
 5. **Reusable Tags** - Tags are shared across all users and tasks for consistency
 6. **Row Level Security** - Database-level security policies ensure data access rules are enforced even if bypassing the service layer
 
+**Dashboard Implementation:**
+- **Separation of Concerns** - Dashboard uses dedicated components (DashboardTaskCard, DashboardTaskList) separate from marketing components
+- **Client-Side Pagination** - 10 tasks per page with independent pagination for active and archived sections
+- **Real-Time Filtering** - Tag filtering resets pagination and updates instantly
+- **Efficient Data Fetching** - Bulk user profile lookup for all assigned users in a single request
+
 **Styling:**
 - **Tailwind CSS v4** for modern styling (no PostCSS required)
 - Consistent design system with gradient backgrounds and modern UI patterns
+- **Glassmorphism Design** - Frosted glass effect with backdrop blur on cards and UI elements
 
 ## 🗄️ Supabase Setup
 
@@ -416,6 +434,53 @@ await updateTaskStatus('task-id', TaskStatus.COMPLETED);
 ```
 
 All service functions automatically handle authentication and permission checks, throwing descriptive errors when operations fail.
+
+### Using the User Service
+
+The user service provides functions for fetching user profiles. Located in `src/services/userService.ts`:
+
+**Getting User Profiles:**
+```typescript
+import { getUsersByIds } from './services/userService';
+
+// Get profiles for multiple users (returns a Map)
+const userIds = ['user-id-1', 'user-id-2', 'user-id-3'];
+const userProfiles = await getUsersByIds(userIds);
+
+// Lookup a specific user
+const user = userProfiles.get('user-id-1');
+console.log(user?.full_name, user?.email);
+```
+
+**Note:** The current implementation returns profile data for the authenticated user and creates placeholders for other users. For production use with multiple team members, you should create a `public.profiles` table that mirrors user info from `auth.users`.
+
+### Dashboard Components
+
+The dashboard uses a modular component architecture:
+
+**Key Components:**
+- `DashboardTaskList` - Main container for displaying tasks with active/archived sections
+- `DashboardTaskCard` - Individual task card with tags, progress, and user badges
+- `TagBadge` - Colored badge for displaying task tags
+- `UserAvatar` - Circular avatar with user initials
+- `Pagination` - Navigation controls for paginated task lists
+
+**Component Hierarchy:**
+```
+Dashboard (page)
+├── DashboardHeader (tag filter, create button)
+└── DashboardTaskList (receives tasks, userProfiles, tagFilter)
+    ├── Active Tasks Section
+    │   ├── DashboardTaskCard (multiple)
+    │   │   ├── TagBadge (multiple)
+    │   │   └── UserAvatar (multiple)
+    │   └── Pagination
+    └── Archived Tasks Section
+        ├── DashboardTaskCard (multiple)
+        └── Pagination
+```
+
+The dashboard fetches tasks on mount and manages state for filtering and pagination.
 
 ### Switching Between Local and Production
 
