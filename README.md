@@ -29,12 +29,18 @@ A modern team task management application built with React, TypeScript, Tailwind
    VITE_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6ImFub24iLCJleHAiOjE5ODM4MTI5OTZ9.CRXP1A7WOeoJeXxjNni43kdQwgnWNReilDMblYTn_I0
    ```
 
-5. **Start the development server:**
+5. **Run database migrations:**
+   ```bash
+   npx supabase migration up
+   ```
+   This creates all necessary tables for task management, including tasks, checklists, assignments, and tags.
+
+6. **Start the development server:**
    ```bash
    npm run dev
    ```
 
-6. **Access the services:**
+7. **Access the services:**
    - App: `http://localhost:5173`
    - Supabase Studio: `http://127.0.0.1:54323`
    - API: `http://127.0.0.1:54321`
@@ -55,7 +61,13 @@ A modern team task management application built with React, TypeScript, Tailwind
    VITE_SUPABASE_ANON_KEY=your-anon-key-here
    ```
 
-3. **Start the development server:**
+3. **Link your local project to Supabase (optional but recommended):**
+   ```bash
+   npx supabase link --project-ref your-project-ref
+   npx supabase db push
+   ```
+
+4. **Start the development server:**
    ```bash
    npm run dev
    ```
@@ -72,25 +84,56 @@ A modern team task management application built with React, TypeScript, Tailwind
 ```
 src/
 ├── components/          # Atomic design components
-│   ├── atoms/          # Basic components
-│   ├── molecules/      # Component combinations
-│   ├── organisms/      # Complex components
+│   ├── atoms/          # Basic components (Button, Input, Logo)
+│   ├── molecules/      # Component combinations (FeatureCard, TaskCard)
+│   ├── organisms/      # Complex components (Header, Sidebar, TaskList)
 │   └── templates/      # Page layouts
-├── pages/              # Page components
-├── services/           # API calls and external services
+├── pages/              # Page components (Home, Dashboard, SignIn, SignUp)
+├── services/           # API services
+│   ├── authService.ts  # Authentication service
+│   ├── taskService.ts  # Task management service (25+ functions)
+│   └── supabase.ts     # Supabase client configuration
 ├── types/              # TypeScript type definitions
+│   ├── auth.ts         # Authentication types
+│   └── task.ts         # Task, checklist, tag types
 ├── hooks/              # Custom React hooks
+│   └── useAuth.ts      # Authentication hook
 └── utils/              # Utility functions
+
+supabase/
+└── migrations/         # Database migrations
+    └── 20251028093317_create_tasks_system.sql
+
+tests/
+├── e2e/               # End-to-end tests (Playwright)
+└── helpers/           # Test utilities
 ```
+
+## ✨ Features
+
+### Task Management
+- **Comprehensive Task System** with title, description, and status tracking
+- **Nested Checklists** - Organize tasks with named checklists, each containing multiple checkable items
+- **Progress Tracking** - Automatic calculation of task progress based on completed checklist items
+- **User Assignments** - Assign tasks to team members with role-based access control
+- **Tagging System** - Reusable, color-coded tags for task categorization
+- **Access Control** - Owner-based permissions with granular access for assigned users
+- **Task States** - Active, Completed, or Canceled status management
+
+### Authentication
+- Email/Password authentication via Supabase Auth
+- Session management
+- Password reset functionality
 
 ## 🛠️ Technologies
 
 - **React 19** - UI framework
 - **TypeScript** - Type safety
-- **Tailwind CSS v4** - Styling
-- **Vite** - Build tool and dev server
-- **Supabase** - Backend as a Service (Authentication, Database, Storage)
+- **Tailwind CSS v4** - Styling with modern CSS features
+- **Vite** - Fast build tool and dev server
+- **Supabase** - Backend as a Service (Authentication, Database, Row Level Security)
 - **React Router** - Client-side routing
+- **Playwright** - End-to-end testing
 - **ESLint** - Code linting
 
 ## 📁 Available Scripts
@@ -101,6 +144,11 @@ src/
 - `npm run preview` - Preview production build
 - `npm run lint` - Run ESLint
 
+### Testing
+- `npm run test:e2e` - Run end-to-end tests with Playwright
+- `npm run test:e2e:ui` - Run e2e tests with Playwright UI
+- `npm run test:e2e:debug` - Debug e2e tests
+
 ### Supabase Local Development
 - `npm run supabase:start` - Start local Supabase (requires Docker)
 - `npm run supabase:stop` - Stop local Supabase
@@ -110,11 +158,43 @@ src/
 
 ## 🔧 Development
 
-The project follows these architectural decisions:
+### Architectural Decisions
+
+The project follows these architectural principles:
+
+**Component Organization:**
 - **Atomic Design System** for component organization
-- **Layered Architecture** with services handling API calls
-- **TypeScript** for type safety throughout the application
+- Components are broken down into reusable, single-purpose units
+- Pages are composed from smaller components for better maintainability
+
+**Backend Architecture:**
+- **Layered Architecture** with clear separation between UI, services, and data
+- **Service Layer** (`src/services/`) handles all backend communication and business logic
+- **Type Safety** with TypeScript interfaces for all data structures
+
+**Task Service Layer:**
+
+The task management system is implemented through a comprehensive service layer (`src/services/taskService.ts`) that provides:
+
+- **25+ Service Functions** covering all CRUD operations for tasks, checklists, items, assignments, and tags
+- **Automatic Authentication** - All service functions validate user authentication
+- **Permission Validation** - Access control enforced at the service layer before database operations
+- **Type-Safe APIs** - Full TypeScript typing for inputs and outputs
+- **Descriptive Error Handling** - Clear error messages distinguishing between permission, not-found, and validation errors
+- **Progress Calculation** - Dynamic progress calculation based on completed checklist items
+
+**Key Design Decisions:**
+
+1. **Progress is Calculated, Not Stored** - Task progress is computed on-demand from checklist item states rather than stored in the database, ensuring accuracy
+2. **Cascade Deletes** - Deleting a task automatically removes all related checklists, items, assignments, and tag associations
+3. **Position-Based Ordering** - Checklists and items use integer position fields for custom user-defined ordering
+4. **Owner vs. Assigned Access** - Task owners have full control including deletion and assignment management, while assigned users can view and edit
+5. **Reusable Tags** - Tags are shared across all users and tasks for consistency
+6. **Row Level Security** - Database-level security policies ensure data access rules are enforced even if bypassing the service layer
+
+**Styling:**
 - **Tailwind CSS v4** for modern styling (no PostCSS required)
+- Consistent design system with gradient backgrounds and modern UI patterns
 
 ## 🗄️ Supabase Setup
 
@@ -154,41 +234,73 @@ The project supports local Supabase development using Docker:
 
 ### Database Schema
 
-Create the following tables in Supabase Studio or via migrations:
+The application uses a comprehensive task management schema with migrations stored in `supabase/migrations/`.
 
-#### Users Table (Automatic)
-Supabase automatically creates an `auth.users` table. Extend user profiles with:
+#### Running Migrations
 
-```sql
--- Create a public profiles table
-CREATE TABLE profiles (
-  id UUID REFERENCES auth.users ON DELETE CASCADE,
-  full_name TEXT,
-  avatar_url TEXT,
-  created_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc', NOW()),
-  updated_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc', NOW()),
-  PRIMARY KEY (id)
-);
-
--- Enable Row Level Security
-ALTER TABLE profiles ENABLE ROW LEVEL SECURITY;
-
--- Create policies
-CREATE POLICY "Public profiles are viewable by everyone"
-  ON profiles FOR SELECT
-  USING (true);
-
-CREATE POLICY "Users can update own profile"
-  ON profiles FOR UPDATE
-  USING (auth.uid() = id);
-```
-
-### Creating Migrations
-
-To save your schema changes as migrations:
+Apply all migrations to your local database:
 
 ```bash
-npx supabase db diff -f create_profiles_table
+npx supabase migration up
+```
+
+Or migrate specific files:
+
+```bash
+npx supabase db push
+```
+
+#### Database Tables
+
+The schema includes the following tables:
+
+**Core Task Tables:**
+- `tasks` - Main task table with title, description, owner, status (active/completed/canceled), and timestamps
+- `task_checklists` - Named checklists within tasks with positioning for custom ordering
+- `task_checklist_items` - Individual checkable items within checklists with checked state and positioning
+- `task_assignments` - Many-to-many relationship linking tasks to assigned users
+- `tags` - Reusable tags with name and optional color
+- `task_tags` - Many-to-many relationship linking tasks to tags
+
+**Authentication:**
+- `auth.users` - Automatically created by Supabase for user authentication
+
+#### Row Level Security (RLS)
+
+All tables have Row Level Security enabled with comprehensive policies:
+
+**Tasks:**
+- Users can read tasks they own or are assigned to
+- Users can update tasks they own or are assigned to
+- Only task owners can delete tasks
+
+**Checklists & Items:**
+- Access permissions inherited from parent task
+- Users with task access can create, read, update, and delete checklists and items
+
+**Assignments:**
+- Readable by users with task access
+- Only task owners can create or remove assignments
+
+**Tags:**
+- All authenticated users can read tags
+- Authenticated users can create and manage tags
+
+**Task-Tags:**
+- Users with task access can add or remove tags
+
+#### Creating New Migrations
+
+To create a new migration:
+
+```bash
+npx supabase migration new your_migration_name
+```
+
+Or generate a migration from schema changes:
+
+```bash
+npx supabase db diff -f your_migration_name
 ```
 
 ### Authentication Setup
@@ -199,6 +311,111 @@ The app uses Supabase Auth with:
 - Password reset functionality
 
 See `src/services/authService.ts` for available auth methods.
+
+### Using the Task Service
+
+The task management system is accessed through `src/services/taskService.ts`. Here are some examples:
+
+**Creating a Task:**
+```typescript
+import { createTask } from './services/taskService';
+
+const newTask = await createTask({
+  title: 'Implement Dashboard',
+  description: 'Build the main dashboard UI',
+  checklists: [
+    {
+      title: 'Design Phase',
+      items: [
+        { content: 'Create wireframes' },
+        { content: 'Design mockups' }
+      ]
+    },
+    {
+      title: 'Development Phase',
+      items: [
+        { content: 'Setup components' },
+        { content: 'Implement features' },
+        { content: 'Add tests' }
+      ]
+    }
+  ],
+  assignedUserIds: ['user-id-1', 'user-id-2'],
+  tagIds: ['tag-id-1']
+});
+```
+
+**Fetching Tasks:**
+```typescript
+import { getTasks, getTask } from './services/taskService';
+
+// Get all tasks accessible to current user
+const allTasks = await getTasks();
+
+// Get a specific task with full details
+const task = await getTask('task-id');
+console.log(`Progress: ${task.progress}%`);
+```
+
+**Managing Checklists:**
+```typescript
+import { 
+  addChecklist, 
+  addChecklistItem, 
+  toggleChecklistItem 
+} from './services/taskService';
+
+// Add a new checklist to a task
+const checklist = await addChecklist('task-id', 'Testing Phase', [
+  { content: 'Write unit tests' },
+  { content: 'Write e2e tests' }
+]);
+
+// Add an item to a checklist
+const item = await addChecklistItem('checklist-id', 'Code review');
+
+// Toggle an item as complete/incomplete
+await toggleChecklistItem('item-id');
+```
+
+**Managing Tags:**
+```typescript
+import { 
+  createTag, 
+  getTags, 
+  addTagToTask,
+  getOrCreateTag 
+} from './services/taskService';
+
+// Create a new tag
+const tag = await createTag({ name: 'urgent', color: '#ff0000' });
+
+// Get all available tags
+const allTags = await getTags();
+
+// Add a tag to a task
+await addTagToTask('task-id', 'tag-id');
+
+// Get existing tag or create if it doesn't exist
+const tag = await getOrCreateTag('frontend', '#3b82f6');
+```
+
+**Managing Task Status:**
+```typescript
+import { updateTask, updateTaskStatus } from './services/taskService';
+import { TaskStatus } from './types/task';
+
+// Update task properties
+await updateTask('task-id', {
+  title: 'Updated Title',
+  description: 'Updated description'
+});
+
+// Mark task as completed
+await updateTaskStatus('task-id', TaskStatus.COMPLETED);
+```
+
+All service functions automatically handle authentication and permission checks, throwing descriptive errors when operations fail.
 
 ### Switching Between Local and Production
 
