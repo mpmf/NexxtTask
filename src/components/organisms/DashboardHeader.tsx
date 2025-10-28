@@ -13,7 +13,7 @@ export const DashboardHeader = () => {
             />
           </div>
           
-          <Button variant="secondary">
+          <Button variant="secondary" to="/create-task">
             + Create Task
           </Button>
         </div>
