@@ -1,19 +1,25 @@
 import React from 'react';
 
 interface InputProps {
+  id?: string;
   type?: string;
   placeholder?: string;
   value?: string;
   onChange?: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  onKeyDown?: (e: React.KeyboardEvent<HTMLInputElement>) => void;
+  onBlur?: (e: React.FocusEvent<HTMLInputElement>) => void;
   className?: string;
   name?: string;
 }
 
 export const Input = ({ 
+  id,
   type = 'text', 
   placeholder, 
   value, 
   onChange,
+  onKeyDown,
+  onBlur,
   className = '',
   name
 }: InputProps) => {
@@ -21,10 +27,13 @@ export const Input = ({
 
   return (
     <input
+      id={id}
       type={type}
       placeholder={placeholder}
       value={value}
       onChange={onChange}
+      onKeyDown={onKeyDown}
+      onBlur={onBlur}
       name={name}
       className={`${baseClasses} ${className}`}
     />

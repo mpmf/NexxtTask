@@ -86,10 +86,11 @@ test.describe('Signup Page', () => {
     
     await page.waitForURL('/');
     
-    await expect(page.getByRole('heading', { name: 'Organize. Collaborate. Achieve.' })).toBeVisible();
+    // After signup, user should see the dashboard with "My Tasks" heading
+    await expect(page.getByRole('heading', { name: 'My Tasks' })).toBeVisible();
   });
 
-  test('should successfully create a new user and redirect to home page', async ({ page }) => {
+  test('should successfully create a new user and redirect to dashboard', async ({ page }) => {
     const testUser = generateTestUser();
     
     await page.getByRole('textbox', { name: 'Your name' }).fill(testUser.fullName);
@@ -101,7 +102,9 @@ test.describe('Signup Page', () => {
     
     await expect(page).toHaveURL('/');
     
-    await expect(page.getByRole('heading', { name: 'Organize. Collaborate. Achieve.' })).toBeVisible();
+    // After signup, user should see the dashboard with "My Tasks" heading and Create Task link
+    await expect(page.getByRole('heading', { name: 'My Tasks' })).toBeVisible();
+    await expect(page.getByRole('link', { name: '+ Create Task' })).toBeVisible();
   });
 
   test('should show error when trying to register with existing email', async ({ page }) => {
@@ -146,7 +149,7 @@ test.describe('Signup Page', () => {
   test('should navigate to sign in page when clicking "Sign In" link', async ({ page }) => {
     await page.getByRole('link', { name: 'Sign In' }).click();
     
-    await expect(page).toHaveURL('/');
+    await expect(page).toHaveURL('/signin');
   });
 
   test('should display all fields with proper placeholder text', async ({ page }) => {
