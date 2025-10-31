@@ -1,0 +1,43 @@
+---
+alwaysApply: true
+---
+
+The code should follow a layered architecture with each layer corresponding to a single responsability. 
+he UI layer uses components in an atomic design fashion (atoms, molecules, organisms, templates, pages). 
+Backend communication should happen through the services layer.
+
+### Component Structure (Atomic Design)
+- **Atoms**: Basic building blocks (Button, Input, TagBadge, UserAvatar, etc.)
+- **Molecules**: Simple combinations of atoms (TaskCard, FormField, Pagination, etc.)
+- **Organisms**: Complex UI components (Header, Sidebar, DashboardTaskList, etc.)
+- **Templates**: Page-level layouts
+
+### Project Structure
+```
+src/
+├── components/          # Atomic design components
+│   ├── atoms/          # Basic components (Button, Input, Logo, TagBadge, UserAvatar)
+│   ├── molecules/      # Component combinations (FeatureCard, TaskCard, DashboardTaskCard, Pagination)
+│   ├── organisms/      # Complex components (Header, Sidebar, TaskList, DashboardTaskList)
+│   └── templates/      # Page layouts
+├── pages/              # Page components (Home, Dashboard, SignIn, SignUp, CreateTask)
+├── services/           # API services
+│   ├── authService.ts  # Authentication service
+│   ├── taskService.ts  # Task management service (25+ functions)
+│   ├── userService.ts  # User profile lookup service
+│   └── supabase.ts     # Supabase client configuration
+├── types/              # TypeScript type definitions
+│   ├── auth.ts         # Authentication types
+│   └── task.ts         # Task, checklist, tag types
+├── hooks/              # Custom React hooks
+│   └── useAuth.ts      # Authentication hook
+└── utils/              # Utility functions
+
+supabase/
+└── migrations/         # Database migrations
+    └── 20251028093317_create_tasks_system.sql
+
+tests/
+├── e2e/               # End-to-end tests (Playwright)
+└── helpers/           # Test utilities
+```
